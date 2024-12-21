@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +21,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]  private float _xJumpForce;
     [SerializeField]  private float _yJumpForce;
     [SerializeField, Range(0, 1)] private float _velocityKeepFactorOnHit;
+    [SerializeField] TMP_Text ChargeTimeText;
 
     void Start()
     {
@@ -34,24 +36,42 @@ public class PlayerController : MonoBehaviour
     {
         MoveHorizontal();
         GetLastDirection();
-        Jump();
+        if (_jumpAction.IsPressed())
+        {
+            ChargeJump();
+        }
+        if (_jumpAction.WasReleasedThisFrame())
+        {
+            ReleaseJump();
+        }
         _lastFrameVelocity = _rb.velocity;
+        float chargePercentage = (_chargeTime / _maxChargeTime) * 100f;
+        ChargeTimeText.text = chargePercentage.ToString("F0") + "%";
     }
-
-    private void Jump()
+    public void ChargeJump()
     {
-        if (_jumpAction.IsPressed() && groundChek.IsGrounded())
+        if (groundChek.IsGrounded() && _rb.velocity.x == 0)
         {
             _chargeTime += Time.deltaTime;
             _chargeTime = Mathf.Clamp(_chargeTime, 0f, _maxChargeTime);
         }
+    }
 
-        if (_jumpAction.WasReleasedThisFrame() && groundChek.IsGrounded())
+    public void ReleaseJump()
+    {
+        if (groundChek.IsGrounded())
         {
-            float jumptime = _chargeTime / _maxChargeTime;
-            float jumpForce = Mathf.Lerp(0f, _maxJumpForce, jumptime);
-            _rb.AddForce(new Vector2(_lastDirection * _xJumpForce * _xCurve.Evaluate(jumptime), _yJumpForce * _yCurve.Evaluate(jumptime)) * jumpForce, ForceMode2D.Impulse);
-            _chargeTime = 0;
+            if (_chargeTime > 0.25)
+            {
+                float jumptime = _chargeTime / _maxChargeTime;
+                float jumpForce = Mathf.Lerp(0f, _maxJumpForce, jumptime);
+                _rb.AddForce(new Vector2(_lastDirection * _xJumpForce * _xCurve.Evaluate(jumptime), _yJumpForce * _yCurve.Evaluate(jumptime)) * jumpForce, ForceMode2D.Impulse);
+                _chargeTime = 0;
+            }
+            else
+            {
+                _chargeTime = 0;
+            }
         }
     }
     private void GetLastDirection()
@@ -72,6 +92,12 @@ public class PlayerController : MonoBehaviour
 
         if (other.contacts[0].normal == Vector2.up)
             _rigidbody.velocity = Vector2.zero;
+        if (other.contacts[0].normal == Vector2.down)
+        {
+            float horizontalVelocity = _rigidbody.velocity.x;
+            float verticalVelocity = Mathf.Min(0, _rigidbody.velocity.y * -0.2f);
+            _rigidbody.velocity = new Vector2(horizontalVelocity, verticalVelocity);
+        }
     }
 
     private void MoveHorizontal()
@@ -82,5 +108,9 @@ public class PlayerController : MonoBehaviour
     private void OnMove(InputValue inputValue)
     {
         _moveAxis = inputValue.Get<Vector2>();
+    }
+    public void Move(int Direction)
+    {
+        _moveAxis = new Vector2(Direction, 0);
     }
 }
