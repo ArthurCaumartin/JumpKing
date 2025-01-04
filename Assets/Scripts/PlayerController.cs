@@ -18,10 +18,11 @@ public class PlayerController : MonoBehaviour
     private Vector2 _lastFrameVelocity;
     [SerializeField] private AnimationCurve _xCurve;
     [SerializeField] private AnimationCurve _yCurve;
-    [SerializeField]  private float _xJumpForce;
-    [SerializeField]  private float _yJumpForce;
+    [SerializeField] private float _xJumpForce;
+    [SerializeField] private float _yJumpForce;
     [SerializeField, Range(0, 1)] private float _velocityKeepFactorOnHit;
-    [SerializeField] TMP_Text ChargeTimeText;
+    private Transform _currentPlatform;
+    private Vector3 _lastPlatformPosition;
 
     void Start()
     {
@@ -36,6 +37,8 @@ public class PlayerController : MonoBehaviour
     {
         MoveHorizontal();
         GetLastDirection();
+        HandlePlatformMovement();
+
         if (_jumpAction.IsPressed())
         {
             ChargeJump();
@@ -44,10 +47,12 @@ public class PlayerController : MonoBehaviour
         {
             ReleaseJump();
         }
+
         _lastFrameVelocity = _rb.velocity;
         float chargePercentage = (_chargeTime / _maxChargeTime) * 100f;
-        ChargeTimeText.text = chargePercentage.ToString("F0") + "%";
+        //ChargeTimeText.text = chargePercentage.ToString("F0") + "%";
     }
+
     public void ChargeJump()
     {
         if (groundChek.IsGrounded() && _rb.velocity.x == 0)
@@ -74,6 +79,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
     private void GetLastDirection()
     {
         if (_moveAxis.x != 0f)
@@ -82,9 +88,14 @@ public class PlayerController : MonoBehaviour
         }
         Debug.DrawRay(transform.position, new Vector2(_lastDirection, 0), Color.red);
     }
+
     void OnCollisionEnter2D(Collision2D other)
     {
-        // print(other.contacts[0].normal);
+        if (other.collider.CompareTag("Platform"))
+        {
+            _currentPlatform = other.transform;
+            _lastPlatformPosition = _currentPlatform.position;
+        }
         if (other.contacts[0].normal == Vector2.left || other.contacts[0].normal == Vector2.right)
         {
             _rigidbody.velocity = new Vector2(-_lastFrameVelocity.x, _lastFrameVelocity.y) * _velocityKeepFactorOnHit;
@@ -92,6 +103,7 @@ public class PlayerController : MonoBehaviour
 
         if (other.contacts[0].normal == Vector2.up)
             _rigidbody.velocity = Vector2.zero;
+
         if (other.contacts[0].normal == Vector2.down)
         {
             float horizontalVelocity = _rigidbody.velocity.x;
@@ -100,15 +112,35 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void OnCollisionExit2D(Collision2D other)
+    {
+        if (other.collider.CompareTag("Platform"))
+        {
+            _currentPlatform = null;
+        }
+    }
+
     private void MoveHorizontal()
     {
         if (!groundChek.IsGrounded() || _rb.velocity.y != 0) return;
         _rb.velocity = new Vector2(_moveAxis.x * _moveSpeed, _rb.velocity.y);
     }
+
+    private void HandlePlatformMovement()
+    {
+        if (_currentPlatform != null)
+        {
+            Vector3 platformMovement = _currentPlatform.position - _lastPlatformPosition;
+            transform.position += platformMovement;
+            _lastPlatformPosition = _currentPlatform.position;
+        }
+    }
+
     private void OnMove(InputValue inputValue)
     {
         _moveAxis = inputValue.Get<Vector2>();
     }
+
     public void Move(int Direction)
     {
         _moveAxis = new Vector2(Direction, 0);
