@@ -8,6 +8,13 @@ public class Shop : MonoBehaviour
     List<Button> _currentButton = new List<Button>();
     [SerializeField] FloatReference piece;
     [SerializeField] Button _buttonPrefab;
+    [SerializeField] private Image _backgroundImage;
+
+    private void Start()
+    {
+        _backgroundImage = GetComponent<Image>();
+        HideShop();
+    }
 
     private bool CanBuy(float price)
     {
@@ -25,11 +32,11 @@ public class Shop : MonoBehaviour
     public void ShowShop(List<GameObject> ItemList)
     {
         ClearButtons();
-        gameObject.SetActive(true);
-        if(ItemList != null)
+        if (_backgroundImage) _backgroundImage.enabled = true;
+        if (ItemList != null)
         {
             print(ItemList.Count);
-            for(int i = 0; i < ItemList.Count; i++)
+            for (int i = 0; i < ItemList.Count; i++)
             {
                 _currentButton.Add(Instantiate(_buttonPrefab, transform));
                 _currentButton[i].onClick.AddListener(() => print(ItemList[i].name));
@@ -40,12 +47,12 @@ public class Shop : MonoBehaviour
     public void HideShop()
     {
         ClearButtons();
-        gameObject.SetActive(false);
+        if (_backgroundImage) _backgroundImage.enabled = false;
     }
 
     public void ClearButtons()
     {
-        for(int i = 0; i < _currentButton.Count; i++)
+        for (int i = 0; i < _currentButton.Count; i++)
         {
             Destroy(_currentButton[i].gameObject);
         }

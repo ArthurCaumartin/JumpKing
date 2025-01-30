@@ -57,6 +57,7 @@ public class PlayerController : MonoBehaviour
     {
         if (groundChek.IsGrounded() && _rb.velocity.x == 0)
         {
+            Debug.DrawRay(transform.position, new Vector2(_lastDirection * _xJumpForce * _xCurve.Evaluate(_chargeTime / _maxChargeTime), _yJumpForce * _yCurve.Evaluate(_chargeTime / _maxChargeTime)));
             _chargeTime += Time.deltaTime;
             _chargeTime = Mathf.Clamp(_chargeTime, 0f, _maxChargeTime);
         }
