@@ -23,6 +23,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0, 1)] private float _velocityKeepFactorOnHit;
     private Transform _currentPlatform;
     private Vector3 _lastPlatformPosition;
+    private LineRenderer _lineRenderer;
+
 
     void Start()
     {
@@ -31,6 +33,15 @@ public class PlayerController : MonoBehaviour
 
         _playerInput = GetComponent<PlayerInput>();
         _jumpAction = _playerInput.actions["Jump"];
+
+        _lineRenderer = gameObject.AddComponent<LineRenderer>();
+        _lineRenderer.startWidth = 0.05f;
+        _lineRenderer.endWidth = 0.05f;
+        _lineRenderer.positionCount = 2;
+        _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        _lineRenderer.startColor = Color.green;
+        _lineRenderer.endColor = Color.green;
+        _lineRenderer.enabled = false;
     }
 
     void Update()
@@ -61,6 +72,10 @@ public class PlayerController : MonoBehaviour
             _chargeTime += Time.deltaTime;
             _chargeTime = Mathf.Clamp(_chargeTime, 0f, _maxChargeTime);
         }
+        _lineRenderer.enabled = true;
+        _lineRenderer.SetPosition(0, transform.position);
+        _lineRenderer.SetPosition(1, (Vector2)transform.position +
+        new Vector2(_lastDirection * _xJumpForce * _xCurve.Evaluate(_chargeTime / _maxChargeTime),_yJumpForce * _yCurve.Evaluate(_chargeTime / _maxChargeTime)));
     }
 
     public void ReleaseJump()
@@ -73,6 +88,7 @@ public class PlayerController : MonoBehaviour
                 float jumpForce = Mathf.Lerp(0f, _maxJumpForce, jumptime);
                 _rb.AddForce(new Vector2(_lastDirection * _xJumpForce * _xCurve.Evaluate(jumptime), _yJumpForce * _yCurve.Evaluate(jumptime)) * jumpForce, ForceMode2D.Impulse);
                 _chargeTime = 0;
+                _lineRenderer.enabled = false;
             }
             else
             {
@@ -104,13 +120,6 @@ public class PlayerController : MonoBehaviour
 
         if (other.contacts[0].normal == Vector2.up)
             _rigidbody.velocity = Vector2.zero;
-
-        if (other.contacts[0].normal == Vector2.down)
-        {
-            float horizontalVelocity = _rigidbody.velocity.x;
-            float verticalVelocity = Mathf.Min(0, _rigidbody.velocity.y * -0.2f);
-            _rigidbody.velocity = new Vector2(horizontalVelocity, verticalVelocity);
-        }
     }
 
     void OnCollisionExit2D(Collision2D other)

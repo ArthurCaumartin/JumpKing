@@ -18,14 +18,14 @@ public class CameraController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void Update() 
     {
-        cameranode = GetNearestNode();
+        cameranode = GetCurrentNode();
         target = cameranode.transform.position;
         _camera.transform.position = Vector3.Lerp(_camera.transform.position, target + new Vector3(0, -GetOffSet(),-10), Time.deltaTime * vitesse);
     }
 
-    CameraNode GetNearestNode()
+    /*CameraNode GetNearestNode()
     {
         CameraNode nodetoreturn = null;
         float minDistance = Mathf.Infinity;
@@ -39,6 +39,18 @@ public class CameraController : MonoBehaviour
             }
         }
         return nodetoreturn;
+    }*/
+
+    private CameraNode GetCurrentNode()
+    {
+        foreach (CameraNode node in CameraNodesList)
+        {
+            if (Player.transform.position.y > node.min && Player.transform.position.y < node.max)
+            {
+                return node;
+            }
+        }
+        return null;
     }
 
     public float GetOffSet()

@@ -33,7 +33,7 @@ public class JumpControler : MonoBehaviour
 
     void Update()
     {
-        if(_groundCheck.IsGrounded() && _rigidbody.velocity.y == 0 && _jumpInputValue == 0)
+        if (_groundCheck.IsGrounded() && _rigidbody.velocity.y == 0 && _jumpInputValue == 0)
         {
             _canMove = true;
         }
@@ -42,7 +42,7 @@ public class JumpControler : MonoBehaviour
             _canMove = false;
         }
 
-        if(_jumpInputValue > .5f && _jumpCharge < _maxJumpCharge)
+        if (_jumpInputValue > .5f && _jumpCharge < _maxJumpCharge)
         {
             _jumpCharge += Time.deltaTime * _jumpChargeSpeed;
         }
@@ -50,7 +50,7 @@ public class JumpControler : MonoBehaviour
 
     void FixedUpdate()
     {
-        if(_moveAxis != Vector2.zero)
+        if (_moveAxis != Vector2.zero)
             MovePalyer();
 
         _lastFrameVelocity = _rigidbody.velocity;
@@ -59,18 +59,18 @@ public class JumpControler : MonoBehaviour
     void OnCollisionEnter2D(Collision2D other)
     {
         // print(other.contacts[0].normal);
-        if(other.contacts[0].normal == Vector2.left || other.contacts[0].normal == Vector2.right)
+        if (other.contacts[0].normal == Vector2.left || other.contacts[0].normal == Vector2.right)
         {
             _rigidbody.velocity = new Vector2(-_lastFrameVelocity.x * _velocityKeepFactorOnHit, _lastFrameVelocity.y);
         }
 
-        if(other.contacts[0].normal == Vector2.up)
+        if (other.contacts[0].normal == Vector2.up)
             _rigidbody.velocity = Vector2.zero;
     }
 
     void MovePalyer()
     {
-        if(!_canMove)
+        if (!_canMove)
             return;
 
         Vector2 newVelocity = new Vector2(_moveAxis.x * _moveSpeed, _rigidbody.velocity.y);
@@ -79,26 +79,26 @@ public class JumpControler : MonoBehaviour
 
     void Jump()
     {
-        if(_jumpCharge > 1)
+        if (_jumpCharge > 1)
         {
             Vector2 jumpDirection = ComputeJumpDirection();
             _rigidbody.AddForce(jumpDirection * _jumpForce * _jumpCharge, ForceMode2D.Impulse);
         }
-         
+
         _jumpCharge = 0;
     }
 
     Vector2 ComputeJumpDirection()
     {
         Vector2 jumpDirection;
-        
+
         float chargeFactor = Mathf.InverseLerp(0, _maxJumpCharge, _jumpCharge);
         jumpDirection.y = chargeFactor;
         jumpDirection.x = 1 - chargeFactor;
         // (1 - ratio) = l'inverse du ratio
 
         //! Clamp en x pour pas aller full en haut
-        if(jumpDirection.x < .1f)
+        if (jumpDirection.x < .1f)
             jumpDirection.x = .1f;
 
         jumpDirection.x *= _lookDirection.x;
@@ -119,7 +119,7 @@ public class JumpControler : MonoBehaviour
     public void OnMove(InputValue value)
     {
         _moveAxis = value.Get<Vector2>();
-        if(_moveAxis.x != 0)
+        if (_moveAxis.x != 0)
             _lookDirection.x = _moveAxis.x;
     }
 
@@ -128,7 +128,7 @@ public class JumpControler : MonoBehaviour
         float floatValue = value.Get<float>();
         _jumpInputValue = floatValue;
 
-        if(floatValue < .5f)
+        if (floatValue < .5f)
         {
             Jump();
         }
