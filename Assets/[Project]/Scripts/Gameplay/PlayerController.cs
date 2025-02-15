@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     private Transform _currentPlatform;
     private Vector3 _lastPlatformPosition;
     private LineRenderer _lineRenderer;
+    bool isPush = false;
 
 
     void Start()
@@ -46,6 +47,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (_rigidbody.velocity.y <= 0) isPush = false;
+        if (isPush == true) return;
         MoveHorizontal();
         GetLastDirection();
         HandlePlatformMovement();
@@ -154,5 +157,10 @@ public class PlayerController : MonoBehaviour
     public void Move(int Direction)
     {
         _moveAxis = new Vector2(Direction, 0);
+    }
+    public void PushPlayer(Vector2 direction, float force)
+    {
+        isPush = true;
+        _rigidbody.AddForce(direction * force, ForceMode2D.Impulse);
     }
 }
