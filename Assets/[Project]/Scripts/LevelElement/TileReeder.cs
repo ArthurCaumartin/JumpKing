@@ -9,19 +9,14 @@ public class TileReeder : MonoBehaviour
     public List<Sprite> SpriteList;
     Sprite sprite;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public float a = 5;
 
-    // Update is called once per frame
     void Update()
     {
         sprite = _tilemap.GetSprite(_tilemap.WorldToCell(transform.position - Vector3.up));
         if (sprite == null) return;
         print(sprite.name);
     }
-    public bool isGroundIce() => SpriteList.Contains(sprite);
 
+    public bool isGroundIce() => SpriteList.Contains(sprite);
 }

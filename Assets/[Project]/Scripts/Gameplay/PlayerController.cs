@@ -26,6 +26,9 @@ public class PlayerController : MonoBehaviour
     private LineRenderer _lineRenderer;
     bool isPush = false;
 
+    private TileReeder _tileReader;
+    private Vector2 _iceVelocity;
+
 
     void Start()
     {
@@ -78,7 +81,7 @@ public class PlayerController : MonoBehaviour
         _lineRenderer.enabled = true;
         _lineRenderer.SetPosition(0, transform.position);
         _lineRenderer.SetPosition(1, (Vector2)transform.position +
-        new Vector2(_lastDirection * _xJumpForce * _xCurve.Evaluate(_chargeTime / _maxChargeTime),_yJumpForce * _yCurve.Evaluate(_chargeTime / _maxChargeTime)));
+        new Vector2(_lastDirection * _xJumpForce * _xCurve.Evaluate(_chargeTime / _maxChargeTime), _yJumpForce * _yCurve.Evaluate(_chargeTime / _maxChargeTime)));
     }
 
     public void ReleaseJump()
@@ -136,6 +139,17 @@ public class PlayerController : MonoBehaviour
     private void MoveHorizontal()
     {
         if (!groundChek.IsGrounded() || _rb.velocity.y != 0) return;
+
+        if (_tileReader.isGroundIce())
+        {
+            Vector3 targetVel = new Vector2(_moveAxis.x * _moveSpeed, _rb.velocity.y);
+
+            targetVel.x -= Time.deltaTime * Mathf.Sign(targetVel.x);
+
+            _rb.velocity = new Vector2(_moveAxis.x * _moveSpeed, _rb.velocity.y);
+            return;
+        }
+
         _rb.velocity = new Vector2(_moveAxis.x * _moveSpeed, _rb.velocity.y);
     }
 
